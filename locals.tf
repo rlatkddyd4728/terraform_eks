@@ -1,7 +1,7 @@
 locals {
 
     iam_roles           = ["sy_kim_ec2_role_test","aws-gamesystems-nxstage"]  ## ec2 role 및 assume role 등
-    karpenter_enable    = true  ## karpenter 생성 이후, true로 변경하고 apply (기본값은 false)
+    karpenter_enable    = false  ## karpenter 생성 이후, true로 변경하고 apply (기본값은 false)
     karpenter_iam_roles = [format("%s_%s_karpenter_node",var.prefix,var.env)]  
     iam_users           = ["sy_kim"]
 

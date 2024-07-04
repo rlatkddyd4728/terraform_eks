@@ -1,11 +1,30 @@
+module "cluster_autoscaler" {
+    count     = local.enable.cluster_autoscaler ? 1 : 0
+    source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+    role_name = format("%s_%s_cluster_autoscaler",var.prefix,var.env)
+
+    attach_cluster_autoscaler_policy      = true
+    cluster_autoscaler_cluster_names      = [data.terraform_remote_state.eks.outputs.cluster_name]
+
+    oidc_providers = {
+        main = {
+            provider_arn               = data.terraform_remote_state.eks.outputs.oidc_provider_arn
+            namespace_service_accounts = ["kube-system:cluster-autoscaler"]
+        }
+
+    }
+}
+
+
 module "karpenter" {
+    count     = local.enable.karpenter ? 1 : 0
     source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
     role_name = format("%s_%s_karpenter_controller",var.prefix,var.env)
 
     attach_karpenter_controller_policy      = false
 
     role_policy_arns = {
-        policy = aws_iam_policy.karpenter.arn
+        policy = aws_iam_policy.karpenter[0].arn
     }
 
     oidc_providers = {
@@ -66,6 +85,7 @@ resource "helm_release" "helm" {
 
 ## https://karpenter.sh/v0.37/troubleshooting/#helm-error-when-installing-the-karpenter-crd-chart
 resource "null_resource" "karpenter-crd" {
+  count         = local.enable.karpenter ? 1 : 0 
   provisioner "local-exec" {
     command     = <<EOT
         kubectl label crd ec2nodeclasses.karpenter.k8s.aws nodepools.karpenter.sh nodeclaims.karpenter.sh app.kubernetes.io/managed-by=Helm --overwrite

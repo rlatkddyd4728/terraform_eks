@@ -1,4 +1,5 @@
 resource "aws_iam_policy" "karpenter" {
+  count  = local.enable.karpenter ? 1 : 0
   name   = format("%s_%s_karpenter_controller_policy",var.prefix,var.env)
   policy = <<JSON
 {
@@ -40,7 +41,7 @@ resource "aws_iam_policy" "karpenter" {
         {
             "Effect": "Allow",
             "Action": "iam:PassRole",
-            "Resource": "${aws_iam_role.karpenter_node.arn}",
+            "Resource": "${aws_iam_role.karpenter_node[0].arn}",
             "Sid": "PassNodeIAMRole"
         },
         {
@@ -59,6 +60,7 @@ JSON
 
 
 resource "aws_iam_policy" "karpenter_node" {
+  count  = local.enable.karpenter ? 1 : 0
   name   = format("%s_%s_karpenter_node_policy",var.prefix,var.env)
   policy = <<JSON
 {
@@ -79,6 +81,7 @@ JSON
 }
 
 resource "aws_iam_role" "karpenter_node" {
+  count                 = local.enable.karpenter ? 1 : 0
   name                  = format("%s_%s_karpenter_node",var.prefix,var.env)
   assume_role_policy    = <<JSON
 {
@@ -97,21 +100,23 @@ JSON
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_node_managed_policy" {
-  for_each      = toset(local.karpenter_node_managed_policy)
-  policy_arn    = each.value
-  role          = aws_iam_role.karpenter_node.name
+  count         = local.enable.karpenter ? length(local.karpenter_node_managed_policy) : 0
+  policy_arn    = local.karpenter_node_managed_policy[count.index]
+  role          = aws_iam_role.karpenter_node[0].name
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_node_custom_policy" {
-  policy_arn    = aws_iam_policy.karpenter_node.arn
-  role          = aws_iam_role.karpenter_node.name
+  count         = local.enable.karpenter ? 1 : 0
+  policy_arn    = aws_iam_policy.karpenter_node[0].arn
+  role          = aws_iam_role.karpenter_node[0].name
 
   depends_on    = [aws_iam_policy.karpenter_node]
 }
 
 resource "aws_iam_instance_profile" "karpenter_node" {
+  count         = local.enable.karpenter ? 1 : 0
   name          = format("%s_%s_karpenter_node_profile",var.prefix,var.env)
-  role          = aws_iam_role.karpenter_node.name
+  role          = aws_iam_role.karpenter_node[0].name
 
   depends_on    = [aws_iam_role.karpenter_node]
 }
