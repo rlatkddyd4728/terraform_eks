@@ -56,6 +56,7 @@ locals {
         #     set                 = {
         #         "autoDiscovery.clusterName"                                         = "${data.terraform_remote_state.eks.outputs.cluster_name}"
         #         "autoDiscovery.enabled"                                             = "true"
+        #         "extraArgs.skip-nodes-with-system-pods"                             = "false"
         #         "rbac.create"                                                       = "true"
         #         "rbac.serviceAccount.create"                                        = "true"
         #         "rbac.serviceAccount.name"                                          = "cluster-autoscaler"

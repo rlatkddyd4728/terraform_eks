@@ -4,7 +4,7 @@ module "eks" {
   version = "20.8.5"
 
   cluster_name    = format("%s_%s",var.prefix,var.env)
-  cluster_version = "1.29"
+  cluster_version = "1.30"
 
   cluster_endpoint_public_access  = false
   cluster_endpoint_private_access = true
@@ -43,7 +43,7 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
       ami_type                                = "AL2023_x86_64_STANDARD"
-      ami_release_version                     = "1.29.3-20240625"
+      ami_release_version                     = "1.30.0-20240625"
       
       # Launch Template
       update_launch_template_default_version  = true

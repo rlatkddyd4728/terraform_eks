@@ -73,6 +73,7 @@ resource "helm_release" "helm" {
         }
     }
     depends_on = [
+        module.cluster_autoscaler,
         module.karpenter,
         module.aws_load_balancer_controller
     ]
