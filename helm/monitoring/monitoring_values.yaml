@@ -1,0 +1,22 @@
+grafana:
+  defaultDashboardsTimezone: Asia/Seoul
+  defaultDashboardsEnabled: false  ## true or false
+  adminPassword: qscdfa156a@
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    accessModes: ["ReadWriteOnce"]
+    resources:
+      requests:
+        storage: 10Gi
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
