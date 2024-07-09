@@ -1,6 +1,4 @@
-# terraform_eks
-
-# 모니터링을 위한 prometheus stack 설치 ( prometheus, alertmanager ,operator ,grafana 등 모니터링에 필요한 여러 구성들이 함께 설치됨 )
+## 모니터링을 위한 prometheus stack 설치 ( prometheus, alertmanager ,operator ,grafana 등 모니터링에 필요한 여러 구성들이 함께 설치됨 )
 - 기본적인 grafana 대시보드 제공 선택 (defaultDashboardsEnabled 옵션)
 
 ## namespace 생성
