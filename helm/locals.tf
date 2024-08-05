@@ -3,7 +3,7 @@ locals {
     enable = {
         ## node scaling 을 위한 것으로 2개 중에 하나만 선택 그리고 선택하지 않은 것은 아래 helm_chart 에서 주석 처리
         karpenter               = true    ## true or false
-        cluster_autoscaler      = true    ## true or false
+        cluster_autoscaler      = false    ## true or false
     }
 
     karpenter_node_managed_policy = [
@@ -20,10 +20,11 @@ locals {
             namespace           = "kube-system"
             version             = "latest"
             set                 = {
-                "clusterName"                   = "${data.terraform_remote_state.eks.outputs.cluster_name}"
-                "serviceAccount.create"         = "true"
-                "serviceAccount.name"           = "aws-load-balancer-controller"
-                "enableServiceMutatorWebhook"   = "false"
+                "clusterName"                                                       = "${data.terraform_remote_state.eks.outputs.cluster_name}"
+                "serviceAccount.create"                                             = "true"
+                "serviceAccount.name"                                               = "aws-load-balancer-controller"
+                "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"         = "${module.aws_load_balancer_controller.iam_role_arn}"
+                "enableServiceMutatorWebhook"                                       = "false"
             }
         }
 
@@ -49,20 +50,20 @@ locals {
             ]    
         }
 
-        cluster-autoscaler = {
-            repository          = "https://kubernetes.github.io/autoscaler"
-            namespace           = "kube-system"
-            version             = "latest"
-            set                 = {
-                "autoDiscovery.clusterName"                                         = "${data.terraform_remote_state.eks.outputs.cluster_name}"
-                "autoDiscovery.enabled"                                             = "true"
-                "extraArgs.skip-nodes-with-system-pods"                             = "false"
-                "rbac.create"                                                       = "true"
-                "rbac.serviceAccount.create"                                        = "true"
-                "rbac.serviceAccount.name"                                          = "cluster-autoscaler"
-                "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"    = "${module.cluster_autoscaler[0].iam_role_arn}"
-            }
-        }
+        # cluster-autoscaler = {
+        #     repository          = "https://kubernetes.github.io/autoscaler"
+        #     namespace           = "kube-system"
+        #     version             = "latest"
+        #     set                 = {
+        #         "autoDiscovery.clusterName"                                         = "${data.terraform_remote_state.eks.outputs.cluster_name}"
+        #         "autoDiscovery.enabled"                                             = "true"
+        #         "extraArgs.skip-nodes-with-system-pods"                             = "false"
+        #         "rbac.create"                                                       = "true"
+        #         "rbac.serviceAccount.create"                                        = "true"
+        #         "rbac.serviceAccount.name"                                          = "cluster-autoscaler"
+        #         "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"    = "${module.cluster_autoscaler[0].iam_role_arn}"
+        #     }
+        # }
     
         karpenter = {
             repository          = "oci://public.ecr.aws/karpenter"

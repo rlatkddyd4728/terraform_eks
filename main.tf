@@ -43,7 +43,7 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
       ami_type                                = "AL2023_x86_64_STANDARD"
-      ami_release_version                     = "1.30.0-20240625"
+      ami_release_version                     = "1.30.2-20240729"
       
       # Launch Template
       update_launch_template_default_version  = true
