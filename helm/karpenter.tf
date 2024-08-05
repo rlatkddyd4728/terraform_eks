@@ -100,8 +100,8 @@ JSON
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_node_managed_policy" {
-  count         = local.enable.karpenter ? length(local.karpenter_node_managed_policy) : 0
-  policy_arn    = local.karpenter_node_managed_policy[count.index]
+  count         = local.enable.karpenter ? length(local.karpenter.karpenter_node_managed_policy) : 0
+  policy_arn    = local.karpenter.karpenter_node_managed_policy[count.index]
   role          = aws_iam_role.karpenter_node[0].name
 }
 

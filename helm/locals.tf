@@ -6,13 +6,16 @@ locals {
         cluster_autoscaler      = false    ## true or false
     }
 
-    karpenter_node_managed_policy = [
-        "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
-        "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
-        "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-        "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
-        "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-    ]
+    karpenter = {
+        version = "0.37.0"
+        karpenter_node_managed_policy = [
+            "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+            "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+            "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+            "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+            "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+        ]
+    }
 
     helm_chart = {
         aws-load-balancer-controller = {
@@ -64,13 +67,22 @@ locals {
         #         "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"    = "${module.cluster_autoscaler[0].iam_role_arn}"
         #     }
         # }
-    
+
+        karpenter-crd = {
+            repository          = "oci://public.ecr.aws/karpenter"
+            namespace           = "karpenter"
+            version             = local.karpenter.version
+            repository_username = data.aws_ecrpublic_authorization_token.token.user_name
+            repository_password = data.aws_ecrpublic_authorization_token.token.password
+        }
+
         karpenter = {
             repository          = "oci://public.ecr.aws/karpenter"
             namespace           = "karpenter"
-            version             = "0.37.0"
+            version             = local.karpenter.version
             repository_username = data.aws_ecrpublic_authorization_token.token.user_name
             repository_password = data.aws_ecrpublic_authorization_token.token.password
+            skip_crds           = true          ## crd 설치 X
             set                 = {
                 "settings.clusterName"                                      = "${data.terraform_remote_state.eks.outputs.cluster_name}" 
                 "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn" = "${module.karpenter[0].iam_role_arn}"

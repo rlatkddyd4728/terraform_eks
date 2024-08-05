@@ -62,6 +62,7 @@ resource "helm_release" "helm" {
     version             = each.value.version == "latest" ? null : each.value.version
     repository_username = lookup(each.value, "repository_username", null)
     repository_password = lookup(each.value, "repository_password", null)
+    skip_crds           = lookup(each.value, "skip_crds", false)
     timeout             = 300
     create_namespace    = true
 
