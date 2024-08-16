@@ -35,7 +35,7 @@ module "eks" {
   create_iam_role                           = false
   create_node_security_group                = false
   enable_cluster_creator_admin_permissions  = true
-  iam_role_arn                              = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/sy_kim_eks_role"
+  iam_role_arn                              = aws_iam_role.eks_cluster.arn
 
   #-----------------------------------------------------
   # Node groups Attributes
@@ -51,7 +51,7 @@ module "eks" {
       use_name_prefix                         = false
       create_iam_role                         = false
       enable_monitoring                       = false
-      iam_role_arn                            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/sy_kim_eks_node_role"
+      iam_role_arn                            = aws_iam_role.eks_node.arn
       vpc_security_group_ids                  = [data.aws_security_group.common.id]
       block_device_mappings = {
         root = {

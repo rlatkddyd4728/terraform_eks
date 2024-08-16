@@ -1,9 +1,21 @@
 locals {
 
-    iam_roles           = ["sy_kim_ec2_role_test","aws-gamesystems-nxstage"]  ## ec2 role 및 assume role 등
-    karpenter_enable    = false  ## karpenter 생성 이후, true로 변경하고 apply (기본값은 false)
-    karpenter_iam_roles = [format("%s_%s_%s_karpenter_node",var.prefix,var.env,var.role)]  
-    iam_users           = ["sy_kim"]
+    iam_roles               = ["sy_kim_ec2_role_test","aws-gamesystems-nxstage"]  ## ec2 role 및 assume role 등
+    karpenter_enable        = true  ## karpenter 생성 이후, true로 변경하고 apply (기본값은 false)
+    karpenter_iam_roles     = [format("%s_%s_%s_karpenter_node",var.prefix,var.env,var.role)]  
+    iam_users               = ["sy_kim"]
+    iam_node_managed_policy =  {
+        eks_cluster         = [
+            "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+            "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+        ]
+        eks_node            = [
+            "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+            "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+            "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+            "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+        ]
+    }
 
     aws_auth_roles      = concat(
         [for role in local.iam_roles : 
@@ -30,7 +42,7 @@ locals {
 
     node_group          = {
         common          = {
-            name                  = format("%s_common",var.role)
+            name                  = format("%s-common",var.role)
             create                = true
             launch_template_name  = format("%s_%s_%s_common",var.prefix,var.env,var.role)
             instance_types        = ["c5.xlarge"]
