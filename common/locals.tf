@@ -53,7 +53,7 @@ locals {
             min_size              = 2
             labels                = {
                 role = "common"
-                env  = "dev"
+                env  = var.env
             }
         }
     }

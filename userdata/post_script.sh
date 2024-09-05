@@ -7,7 +7,7 @@ Content-Type: text/x-shellscript; charset="us-ascii"
 #!/bin/bash
 echo "Running custom user data script"
 
-export prefix=ksy
+export prefix=ok
 export env=dev
 export dev_id=sy_kim
 export region=ap-southeast-3

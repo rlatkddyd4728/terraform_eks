@@ -1,5 +1,5 @@
 variable "prefix" {
-  default = "ksy"
+  default = "ok"
 }
 
 variable "env" {

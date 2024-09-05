@@ -40,19 +40,6 @@ locals {
             }
         }
 
-        # argo-cd = {
-        #     repository          = "https://argoproj.github.io/argo-helm"
-        #     namespace           = "argocd"
-        #     version             = "latest"
-        #     set                 = {
-        #         # "server.extraArgs"      = "{--insecure}"
-        #         "nameOverride"          = "" 
-        #     }
-        #     manifest            = [
-        #         "argocd-cm.yaml", "argocd-rbac.yaml"
-        #     ]    
-        # }
-
         # cluster-autoscaler = {
         #     repository          = "https://kubernetes.github.io/autoscaler"
         #     namespace           = "kube-system"

@@ -53,7 +53,7 @@ locals {
             min_size              = 2
             labels                = {
                 role = format("%s_common",var.role)
-                env  = "dev"
+                env  = var.env
             }
         }
     }
