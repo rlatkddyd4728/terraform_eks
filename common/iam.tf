@@ -55,14 +55,14 @@ JSON
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_managed_policy" {
-  count         = length(local.iam_node_managed_policy.eks_cluster) 
-  policy_arn    = local.iam_node_managed_policy.eks_cluster[count.index]
+  count         = length(local.iam_eks_managed_policy.eks_cluster) 
+  policy_arn    = local.iam_eks_managed_policy.eks_cluster[count.index]
   role          = aws_iam_role.eks_cluster.name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_node_managed_policy" {
-  count         = length(local.iam_node_managed_policy.eks_node) 
-  policy_arn    = local.iam_node_managed_policy.eks_node[count.index]
+  count         = length(local.iam_eks_managed_policy.eks_node) 
+  policy_arn    = local.iam_eks_managed_policy.eks_node[count.index]
   role          = aws_iam_role.eks_node.name
 }
 

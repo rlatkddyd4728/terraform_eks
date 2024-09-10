@@ -1,6 +1,7 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   # version = "~> 20.0"
+  # version = "20.24.0"
   version = "20.8.5"
 
   cluster_name    = format("%s_%s",var.prefix,var.env)
@@ -43,7 +44,7 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
       ami_type                                = "AL2023_x86_64_STANDARD"
-      ami_release_version                     = "1.30.2-20240729"
+      ami_release_version                     = "1.30.2-20240904"
       
       # Launch Template
       update_launch_template_default_version  = true
