@@ -54,6 +54,7 @@ module "eks" {
       enable_monitoring                       = false
       iam_role_arn                            = aws_iam_role.eks_node.arn
       vpc_security_group_ids                  = [data.aws_security_group.common.id]
+      subnets                                 = data.aws_subnets.pri_sub.ids
       block_device_mappings = {
         root = {
           device_name = "/dev/xvda"

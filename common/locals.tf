@@ -46,7 +46,6 @@ locals {
             create                = true
             launch_template_name  = format("%s_%s_common",var.prefix,var.env)
             instance_types        = ["c5.xlarge"]
-            subnets               = data.aws_subnets.pri_sub.ids
             #scaling option
             desired_size          = 2
             max_size              = 2
