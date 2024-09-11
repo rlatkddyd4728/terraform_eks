@@ -1,3 +1,9 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
+--==MYBOUNDARY==
+Content-Type: text/x-shellscript; charset="us-ascii"
+
 #!/bin/bash
 echo "Running custom user data script"
 
@@ -58,3 +64,4 @@ if ! grep -q imageGCLowThresholdPercent /etc/kubernetes/kubelet/kubelet-config.j
 then 
     sed -i '/"imageGCHigh*/a \ \ "imageGCLowThresholdPercent": 50,' /etc/kubernetes/kubelet/kubelet-config.json
 fi
+--==MYBOUNDARY==--

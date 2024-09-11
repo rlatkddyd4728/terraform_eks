@@ -1,8 +1,8 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   # version = "~> 20.0"
-  # version = "20.24.0"
-  version = "20.8.5"
+  version = "20.24.0"
+  # version = "20.8.5"
 
   cluster_name    = format("%s_%s",var.prefix,var.env)
   cluster_version = "1.30"
@@ -69,8 +69,13 @@ module "eks" {
       }    
       capacity_type               = "ON_DEMAND"
       key_name                    = "sy_kim_keypair"
-      pre_bootstrap_user_data     = file("../userdata/post_script.sh")
-      enable_bootstrap_user_data  = true
+      # pre_bootstrap_user_data     = file("../userdata/post_script.sh")
+      cloudinit_pre_nodeadm = [{
+        content      = file("../userdata/post_script.sh")
+        content_type = "text/x-shellscript; charset=\"us-ascii\""
+      }]
+
+      enable_bootstrap_user_data  = false
 
   }
 
