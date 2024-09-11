@@ -71,7 +71,7 @@ module "eks" {
       key_name                    = "sy_kim_keypair"
       # pre_bootstrap_user_data     = file("../userdata/post_script.sh")
       cloudinit_pre_nodeadm = [{
-        content      = file("../userdata/post_script.sh")
+        content      = file("../userdata/AL2023_post_script.sh")
         content_type = "text/x-shellscript; charset=\"us-ascii\""
       }]
 
