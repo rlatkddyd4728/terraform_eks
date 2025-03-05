@@ -1,0 +1,88 @@
+defaultRules:
+  create: true
+  rules:
+    etcd: false
+    general: false
+    configReloaders: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+
+alertmanager:
+  enabled: false 
+
+grafana:
+  enabled: false
+
+prometheus:
+  enabled: true
+  thanosServiceExternal:
+    enabled: true
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: external             
+      service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip       
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+      service.beta.kubernetes.io/aws-load-balancer-name: test-dev-sub-thanos-sidecar
+      service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-0182066092df755ac,subnet-087786f8a188a67e1
+    type: LoadBalancer
+    loadBalancerSourceRanges: ["10.0.0.0/16"] ## 같은 리전이면 main cluster가 존재하는 vpc cidr / 다른 리전이면 main cluster의 nat ip (피어링 맺으면 vpc cidr로)
+  prometheusSpec:
+    replicas: 2
+    externalLabels:
+      cluster: test-dev-sub                     ## cluster 구분을 위한 라벨 설정
+    nodeSelector: 
+      tier: ng
+      role: monitoring
+    tolerations:
+    - key: ng
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule    
+    retention: 30d
+    retentionSize: 90GiB
+    thanos: 
+      image: "quay.io/thanos/thanos:v0.37.2"
+      objectStorageConfig:
+        existingSecret:
+          key: objstore.yaml
+          name: thanos-objstore-config
+      version: v0.37.2
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+
+prometheusOperator:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+
+kube-state-metrics:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false

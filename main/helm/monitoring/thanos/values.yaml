@@ -1,0 +1,110 @@
+global:
+  storageClass: gp3
+objstoreConfig: |-
+  type: s3
+  config:
+    bucket: s3-sykim-ops
+    endpoint: s3.ap-southeast-3.amazonaws.com
+    region: ap-southeast-3
+    access_key: xxxx
+    secret_key: xxxx
+    signature_version2: false
+    trace:
+      enable: true
+  prefix: thanos/dev/*
+
+## prometheus sider 와 storegateway를 통해 쿼리 요청
+query:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+  stores:
+    - prometheus-kube-prometheus-thanos-discovery.monitoring.svc.cluster.local:10901
+    - thanos-storegateway.monitoring.svc.cluster.local:10901
+    # - {sub cluster의 thanos sider nlb}:10901
+
+## Thanos Query의 읽기 성능 향상을 위한 서비스 제공
+queryFrontend:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+  ## 인메모리 캐시를 사용하여 데이터 적재 (https://thanos.io/tip/components/query-frontend.md/#in-memory)
+  config: |-
+    type: IN-MEMORY
+    config:
+      max_size: 512MB
+      max_size_items: 100
+      validity: 300s
+  extraFlags:
+  - --query-range.split-interval=24h                ## 퀴리 범위를 24시간 단위로 분할 
+  - --query-range.max-retries-per-request=5         ## 쿼리 요청이 실패할 때, 최대 5번 재시도 
+  - --query-frontend.log-queries-longer-than=30s    ## 30초 이상 걸리는 쿼리는 로그에 기록
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    hostname: ''
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: test-dev-thanos
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/subnets: subnet-05ac7d9b7c1509757,subnet-03acee8be974e8d6d
+      alb.ingress.kubernetes.io/inbound-cidrs: '119.206.206.251/32'
+      alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+      alb.ingress.kubernetes.io/success-codes: '200,302'
+    extraRules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: thanos-query-frontend
+                port:
+                  number: 9090
+## 데이터를 효율적으로 관리하고 보존하는 역할
+compactor:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+  retentionResolutionRaw: 30d         ## 원시 데이터 보존 기간
+  retentionResolution5m: 30d          ## 5분 단위로 집계된 데이터 보존 기간
+  retentionResolution1h: 30d          ## 1시간 단위로 집계된 데이터 보존 기간
+storegateway:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+  config: |-
+    type: IN-MEMORY
+    config:
+      max_size: 250MB
+      max_item_size: 125MB
+
+## thanos에 의해 연동된 모든 prometheus 대상의 룰을 정의하고 처리 (prometheus rule와 동일한 문법 사용 및 query를 통해 실시간 체크)
+## thanos ruler는 좀 더 테스트 필요 -> 현재는 각 클러스터마다 prometheus rule 생성하는 형식으로 진행
+ruler:
+  enabled: false

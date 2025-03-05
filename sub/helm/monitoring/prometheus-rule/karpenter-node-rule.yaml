@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: karpenter-node-rule
+  namespace: monitoring
+  labels:
+    role: ruler
+    release: prometheus
+spec:
+  groups:
+    - name: node created
+      rules:
+        - alert: node created
+          annotations:
+            summary: '{{ $labels.nodepool }}  created '
+          expr: >-
+            idelta(karpenter_nodes_created_total[3m]) > 0
+          for: 0s
+          labels:
+            severity: none
+    - name: node terminated
+      rules:
+        - alert: node termintaed
+          annotations:
+            summary: '{{ $labels.nodepool }}  terminated'
+          expr: >-
+            idelta(karpenter_nodes_terminated_total[3m]) > 0 
+          for: 0s
+          labels:
+            severity: none

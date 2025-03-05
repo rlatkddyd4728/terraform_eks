@@ -1,0 +1,72 @@
+## 모니터링을 위한 prometheus stack 설치 ( prometheus, alertmanager ,operator ,grafana 등 모니터링에 필요한 여러 구성들이 함께 설치됨 )
+- 기본적인 grafana 대시보드 제공 선택 (defaultDashboardsEnabled 옵션)
+
+## namespace 생성
+- kubectl create ns monitoring
+
+## storageclass gp3 생성
+- kubectl apply -f storageclass_gp3.yaml
+
+## prometheus stack 설치
+- helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+- helm repo update
+
+## helm install
+- helm install prometheus -n monitoring prometheus-community/kube-prometheus-stack -f monitoring_values.yaml -n monitoring
+
+## servicemonitor 생성
+- kubectl apply -f servicemonitor.yaml
+
+## monitoring elb 생성
+- kubectl apply -f monitoring_elb.yaml
+
+
+## ============================================================
+## 멀티 클러스터 모니터링을 위한 Thanos 사용 
+## ============================================================
+
+## namespace 생성
+- kubectl create ns monitoring
+
+## storageclass gp3 생성
+- kubectl apply -f storageclass_gp3.yaml
+
+## 쿠버네티스 시크릿 생성
+- kubectl create secret generic thanos-objstore-config -n monitoring --from-file=objstore.yaml
+
+## prometheus stack 설치
+- helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+- helm repo update
+
+## helm install
+- helm install prometheus -n monitoring prometheus-community/kube-prometheus-stack -f prometheus-stack/values.yaml
+
+## prometheus alertmanger rule
+- kubectl apply -f prometheus-rule/karpenter-node-rule.yaml 
+- kubectl apply -f prometheus-rule/pod-rule.yaml
+
+## Thanos 배포
+- helm repo add bitnami https://charts.bitnami.com/bitnami
+- helm repo update
+- helm install thanos -n monitoring bitnami/thanos -f thanos/values.yaml 
+
+
+## ============================================================
+## helm upgrade 
+## ============================================================
+
+## prometheus
+- helm upgrade prometheus -n monitoring prometheus-community/kube-prometheus-stack -f prometheus-stack/values.yaml
+
+## thanos
+- helm upgrade thanos -n monitoring bitnami/thanos -f thanos/values.yaml
+
+## ============================================================
+## helm upgrade 
+## ============================================================
+
+## prometheus 
+- helm uninstall prometheus -n monitoring prometheus-community/kube-prometheus-stack
+
+## thanos
+- helm uninstall thanos -n monitoring bitnami/thanos

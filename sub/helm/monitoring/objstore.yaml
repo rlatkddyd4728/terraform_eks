@@ -1,0 +1,11 @@
+type: S3
+config:
+  bucket: s3-sykim-ops
+  endpoint: s3.ap-southeast-3.amazonaws.com
+  region: ap-southeast-3
+  access_key: xxxxx
+  secret_key: yyyyy
+  signature_version2: false
+  trace:
+    enable: true
+prefix: thanos/dev/sub

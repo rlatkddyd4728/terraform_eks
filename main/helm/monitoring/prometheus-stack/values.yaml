@@ -1,0 +1,183 @@
+defaultRules:
+  create: true
+  rules:
+    etcd: false
+    general: false
+    configReloaders: false
+    kubeControllerManager: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+
+alertmanager:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: test-dev-prometheus-alertmanager
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 9093}]'
+      alb.ingress.kubernetes.io/subnets: subnet-05ac7d9b7c1509757,subnet-03acee8be974e8d6d
+      alb.ingress.kubernetes.io/inbound-cidrs: '119.206.206.251/32'
+      alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+      alb.ingress.kubernetes.io/success-codes: '200,302'
+    paths:
+      - /*
+  alertmanagerSpec:
+    nodeSelector: 
+      tier: ng
+      role: monitoring
+    tolerations:
+    - key: ng
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url: 'https://hooks.slack.com/services/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'
+    route:
+      group_by: ['namespace']
+      group_wait: 30s
+      group_interval: 10m
+      repeat_interval: 6h
+      receiver: 'slack'
+      routes:
+      - receiver: 'slack'
+    receivers:
+    - name: 'slack'
+      slack_configs:
+      - channel: '#alert'
+        send_resolved: true
+        title: '{{ .CommonLabels.alertname }}'
+        text: |-
+          {{ range .Alerts }}
+            *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+            *Description:* {{ .Annotations.description }}
+            *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
+
+grafana:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+  defaultDashboardsTimezone: Asia/Seoul
+  defaultDashboardsEnabled: true  ## true or false
+  adminUser: sykim
+  adminPassword: qscdfa156a@
+  sidecar:
+    dashboards:
+      multicluster:
+        global:
+          enabled: true
+        etcd:
+          enabled: true
+      provider:
+        allowUiUpdates: true
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    accessModes: ["ReadWriteOnce"]
+    size: 30Gi
+  ingress:
+    enabled: true 
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: test-dev-grafana
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 3000}]'
+      alb.ingress.kubernetes.io/subnets: subnet-05ac7d9b7c1509757,subnet-03acee8be974e8d6d
+      alb.ingress.kubernetes.io/inbound-cidrs: '119.206.206.251/32'
+      alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+      alb.ingress.kubernetes.io/success-codes: '200,302'
+    paths:
+      - /*
+
+prometheus:
+  enabled: true
+  thanosService:
+    enabled: true
+  prometheusSpec:
+    replicas: 2
+    externalLabels:
+      cluster: test-dev                     ## cluster 구분을 위한 라벨 설정
+    nodeSelector: 
+      tier: ng
+      role: monitoring
+    tolerations:
+    - key: ng
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule    
+    retention: 30d
+    retentionSize: 90GiB
+    thanos: 
+      image: "quay.io/thanos/thanos:v0.37.2"
+      objectStorageConfig:
+        existingSecret:
+          key: objstore.yaml
+          name: thanos-objstore-config
+      version: v0.37.2
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    annotations:
+      alb.ingress.kubernetes.io/load-balancer-name: test-dev-prometheus
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 9090}]'
+      alb.ingress.kubernetes.io/subnets: subnet-05ac7d9b7c1509757,subnet-03acee8be974e8d6d
+      alb.ingress.kubernetes.io/inbound-cidrs: '119.206.206.251/32'
+      alb.ingress.kubernetes.io/load-balancer-attributes: deletion_protection.enabled=false
+      alb.ingress.kubernetes.io/success-codes: '200,302'
+    paths:
+      - /*
+
+prometheusOperator:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+
+kube-state-metrics:
+  enabled: true
+  nodeSelector: 
+    tier: ng
+    role: monitoring
+  tolerations:
+  - key: ng
+    operator: Equal
+    value: monitoring
+    effect: NoSchedule
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
