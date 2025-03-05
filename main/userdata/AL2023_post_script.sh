@@ -43,18 +43,3 @@ for user in "${users[@]}"; do
     chown -R ${user}:${user} /home/${user}/.ssh
     echo "${user}    ALL=(ALL)   NOPASSWD: ALL" > /etc/sudoers.d/${user}
 done
-
-#=============================
-# Add the kubelet garbage collection
-#=============================
-# Inject imageGCHighThresholdPercent value unless it has already been set.
-if ! grep -q imageGCHighThresholdPercent /etc/kubernetes/kubelet/kubelet-config.json; 
-then 
-    sed -i '/"apiVersion*/a \ \ "imageGCHighThresholdPercent": 70,' /etc/kubernetes/kubelet/kubelet-config.json
-fi
-
-# Inject imageGCLowThresholdPercent value unless it has already been set.
-if ! grep -q imageGCLowThresholdPercent /etc/kubernetes/kubelet/kubelet-config.json; 
-then 
-    sed -i '/"imageGCHigh*/a \ \ "imageGCLowThresholdPercent": 50,' /etc/kubernetes/kubelet/kubelet-config.json
-fi
