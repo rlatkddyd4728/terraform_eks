@@ -90,7 +90,7 @@ resource "null_resource" "argocd_password" {
   provisioner "local-exec" {
     working_dir = "./argocd_manifest"
     command     = <<EOT
-      kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath={.data.password} | base64 -d > argocd-login.txt
+      kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath={.data.password} | base64 -d > argocd-password.txt
 EOT
   }
   depends_on = [helm_release.helm]
